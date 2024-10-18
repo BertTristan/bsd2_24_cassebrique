@@ -3,12 +3,11 @@ package cassebrique.models;
 import cassebrique.CasseBrique;
 
 import java.awt.*;
+import java.util.ArrayList;
 
-public class Balle extends Sprite {
-
+public class Balle extends Rond {
     protected int vitesseX;
     protected int vitesseY;
-    protected int diametre = 20;
 
     public Balle() {
         super();
@@ -48,7 +47,7 @@ public class Balle extends Sprite {
         return (int)(Math.random() * (max - min) + min);
     }
 
-    public void deplacer() {
+    public void deplacer(Barre barre, ArrayList listeBrique, ArrayList listeBonus, Graphics2D dessin) {
 
         x += vitesseX;
         y += vitesseY;
@@ -60,12 +59,41 @@ public class Balle extends Sprite {
         if(y >= CasseBrique.HAUTEUR - diametre || y <= 0) {
             vitesseY = -vitesseY;
         }
+
+        // collisions
+        if (collisionsBarre(barre)){
+            vitesseY = -vitesseY;
+        }
+
+        for(int i = 0; i <listeBrique.size(); i++){
+            Brique brique = (Brique) listeBrique.get(i);
+            if (collisionsBrique(brique)){
+                vitesseY = -vitesseY;
+                brique.setResistance(brique.getResistance() - 1);
+                switch(brique.getResistance()){
+                    case 0:
+                        brique.detruireBrique(brique, listeBrique, listeBonus, dessin);
+                        break;
+                    case 1:
+                        brique.setCouleur(Color.red);
+                        break;
+                    case 2:
+                        brique.setCouleur(Color.orange);
+                        break;
+                }
+            }
+        }
+
+
     }
 
-    public void dessiner(Graphics2D dessin) {
-        dessin.setColor(couleur);
-        dessin.fillOval(x,y,diametre,diametre);
+    public boolean collisionsBarre(Barre barre){
+        return x + diametre >= barre.getX() && x<= barre.getX() + barre.getLargeurDefaut() && y + diametre >= barre.getY() && y<= barre.getY() + barre.getHauteurDefaut();
     }
+    public boolean collisionsBrique(Brique brique){
+        return x + diametre >= brique.getX() && x<= brique.getX() + Brique.getLargeurDefaut() && y + diametre >= brique.getY() && y<= brique.getY() + Brique.getHauteurDefaut();
+    }
+
 
 
     public int getX() {
